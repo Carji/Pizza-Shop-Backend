@@ -1,71 +1,28 @@
 package com.example.demo.infrastructure.pizzaInfrastructure;
 
-import com.cloudinary.Cloudinary;
-import com.example.demo.domain.imageDomain.Image;
-import com.example.demo.domain.pizzaDomain.*;
-import com.example.demo.core.Exceptions.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
 import java.util.*;
+import com.example.demo.domain.pizzaDomain.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class PizzaRepositoryImp implements PizzaRepositoryWrite, PizzaRepositoryRead {
 
     private PizzaRepositoryJPA pizzaRepositoryJPA;
-    private final RedisTemplate<String, byte[]> template;
 
     @Autowired
-    public PizzaRepositoryImp(final PizzaRepositoryJPA pizzaRepositoryJPA,
-            final RedisTemplate<String, byte[]> template) {
+    public PizzaRepositoryImp(final PizzaRepositoryJPA pizzaRepositoryJPA) {
         this.pizzaRepositoryJPA = pizzaRepositoryJPA;
-        this.template = template;
     }
 
     @Override
     public void add(Pizza pizza) {
-        Image image = pizza.getImage();
-        try {
-            byte[] bytes = this.template.opsForValue().get(image.getId().toString());
-            // if (bytes==null) {
-            // }
-            image.setData(bytes);
-            Cloudinary cloudinary = new Cloudinary();
-            String cloudUrl = cloudinary.url().secure(true).publicId(image.getId()).generate();
-            image.setUrl(cloudUrl);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(InternalServerErrorEnum.REDIRECT);
-        } finally {
-            if (!this.template.getConnectionFactory().getConnection().isClosed()) {
-                this.template.getConnectionFactory().getConnection().close();
-            }
-        }
-        pizza.setImage(image);
         this.pizzaRepositoryJPA.save(pizza);
     }
 
     @Override
     public void update(Pizza pizza) {
-        Image image = pizza.getImage();
-        try {
-            byte[] bytes = this.template.opsForValue().get(image.getId().toString());
-            // if (bytes==null) {
-            // }
-            image.setData(bytes);
-            // Cloudinary cloudinary=new Cloudinary();
-            // String cloudUrl=
-            // cloudinary.url().secure(true).publicId(image.getId()).generate();
-            // image.setUrl(cloudUrl);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(InternalServerErrorEnum.REDIRECT);
-        } finally {
-            if (!this.template.getConnectionFactory().getConnection().isClosed()) {
-                this.template.getConnectionFactory().getConnection().close();
-            }
-        }
-        pizza.setImage(image);
         this.pizzaRepositoryJPA.save(pizza);
     }
 

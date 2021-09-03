@@ -13,7 +13,4 @@ public @Getter @Setter @NoArgsConstructor class Image extends EntityBase{
     @Size(min = 1)
     @Transient
     private byte[] data;
-    @Size(min=1)
-    private String url;
-
 }
